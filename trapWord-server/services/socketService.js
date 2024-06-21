@@ -14,13 +14,8 @@ const socketService = {
 			console.log(`Socket connected: ${socket.id}`)
 
 			socket.on('joinRoom', async ({ roomCode, playerName }) => {
-				try {
-					socket.join(roomCode)
-					io.to(roomCode).emit('playerJoined', { roomCode, playerName })
-					await joinRoom(roomCode, playerName, socket.id)
-				} catch (err) {
-					console.error(err.message)
-				}
+				socket.join(roomCode)
+				io.to(roomCode).emit('playerJoined', { roomCode, playerName })
 			})
 
 			socket.on('disconnect', () => {
@@ -28,8 +23,6 @@ const socketService = {
 				// Here you can implement logic to remove the player from the room
 			})
 		})
-
-		Object.freeze(io)
 	},
 	getIO: () => {
 		if (!io) {

@@ -9,26 +9,25 @@ const socket = io('http://localhost:3000')
 
 const LobbyPage = () => {
 	const { id } = useParams()
-	const [roomCode, setRoomCode] = useState(id)
 	const { data: existRoom } = roomAPI.useCheckRoomExistenceQuery(id)
 	const { data: participants, refetch } = roomAPI.useGetPlayersInRoomQuery(id)
 	const [roomExists, setRoomExists] = useState(false)
-
-	useEffect(() => {
-		if (existRoom) {
-			setRoomExists(existRoom.exists)
-		}
-	}, [existRoom])
-
 	const [isModalRefer, setIsModalRefer] = useState(false)
 	const [userName, setUserName] = useState('')
 	const minPlayers = 4
 
 	useEffect(() => {
+		if (existRoom) {
+			setRoomExists(existRoom.exists)
+			socket.emit('joinRoom', { roomCode: id, playerName: userName })
+		}
+	}, [existRoom])
+
+	useEffect(() => {
 		socket.on('playerJoined', data => {
 			console.log('playerJoined', data)
 
-			if (data.roomCode === roomCode) {
+			if (data.roomCode === id) {
 				refetch()
 			}
 		})
@@ -36,20 +35,7 @@ const LobbyPage = () => {
 		return () => {
 			socket.off('playerJoined')
 		}
-	}, [participants])
-
-	useEffect(() => {
-		socket.on('playerJoined', data => {
-			console.log('playerJoined', data)
-
-			if (data.roomCode === roomCode) {
-			}
-		})
-
-		return () => {
-			socket.off('playerJoined')
-		}
-	}, [])
+	}, [id, refetch])
 
 	const renderConditions = () => {
 		if (!userName) {
