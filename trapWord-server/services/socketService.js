@@ -4,11 +4,10 @@ let io
 
 const socketService = {
 	init: server => {
-		const io = new Server(server, {
+		io = new Server(server, {
 			connectionStateRecovery: {},
 			cors: {
-				origin: '*',
-				credentials: true,
+				origin: '*'
 			},
 		})
 		io.on('connection', socket => {
@@ -29,6 +28,8 @@ const socketService = {
 				// Here you can implement logic to remove the player from the room
 			})
 		})
+
+		Object.freeze(io);
 	},
 	getIO: () => {
 		if (!io) {
