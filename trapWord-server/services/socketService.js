@@ -8,6 +8,7 @@ const socketService = {
 			connectionStateRecovery: {},
 			cors: {
 				origin: '*',
+				credentials: true,
 			},
 		})
 		io.on('connection', socket => {

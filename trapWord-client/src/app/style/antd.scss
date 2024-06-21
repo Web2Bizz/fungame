@@ -2,3 +2,11 @@
 	font-size: 2em;
 	height: auto;
 }
+
+.selected-row {
+	background-color: #1890ff;
+}
+
+.ant-table-tbody > .clickRowStyl:hover > td {
+	background-color: #00b4ed;
+}

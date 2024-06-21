@@ -1,53 +1,53 @@
 import { CopyOutlined } from '@ant-design/icons'
 import { Avatar, Button, Input, Modal, Space } from 'antd'
 import React, { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
+import io from 'socket.io-client'
+import { roomAPI } from '../../entitys/Room/api/service'
+
+const socket = io('http://localhost:3000', {
+	withCredentials: true,
+	extraHeaders: {
+		'Access-Control-Allow-Origin': 'http://localhost:5173',
+	},
+})
 
 const LobbyPage = () => {
+	const { id } = useParams()
+	const [roomCode, setRoomCode] = useState(id)
+	const { data: existRoom } = roomAPI.useCheckRoomExistenceQuery(id)
+	const { data: participants, refetchParticipants } =
+		roomAPI.useGetPlayersInRoomQuery(id)
+	const [roomExists, setRoomExists] = useState(false)
+
+	useEffect(() => {
+		if (existRoom) {
+			setRoomExists(existRoom.exists)
+		}
+	}, [existRoom])
+
 	const [isModalRefer, setIsModalRefer] = useState(false)
 	const [userName, setUserName] = useState('')
-	const [roomCode, setRoomCode] = useState('555666') // Состояние для хранения кода комнаты
-	const [participants, setParticipants] = useState([
-		{
-			name: 'Иван',
-			avatar:
-				'https://avatars.mds.yandex.net/get-entity_search/118114/831955895/S600xU_2x',
-		},
-		{
-			name: 'Петр',
-			avatar:
-				'https://avatars.mds.yandex.net/get-entity_search/118114/831955895/S600xU_2x',
-		},
-		{
-			name: 'Алексей',
-			avatar:
-				'https://avatars.mds.yandex.net/get-entity_search/118114/831955895/S600xU_2x',
-		},
-	]) // Состояние для хранения списка участников
 	const minPlayers = 4
 
 	useEffect(() => {
-		// Здесь добавить логику для работы с бэкендом, получение списка участников или генерация кода комнаты
-		// Получение списка участников и кода комнаты
-	}, [])
+		socket.on('playerJoined', data => {
+			if (data.roomCode === roomCode) {
+				refetchParticipants()
+			}
+		})
 
-	// useEffect(() => {
-	// 	let { id } = useParams()
-	// 	console.log(id)
-	// }, [])
+		return () => {
+			socket.off('playerJoined')
+		}
+	}, [roomCode, refetchParticipants])
 
 	const renderConditions = () => {
 		if (!userName) {
-			return (
-				<SelectName
-					participants={participants || []}
-					setParticipants={setParticipants}
-					setUserName={setUserName}
-				/>
-			)
+			return <SelectName setUserName={setUserName} roomCode={id} />
 		}
 		if (participants && participants.length >= minPlayers) {
-			return <StartGameButton roomCode={roomCode} />
+			return <StartGameButton roomCode={id} />
 		} else {
 			return <InviteButton setIsModalRefer={setIsModalRefer} />
 		}
@@ -61,16 +61,18 @@ const LobbyPage = () => {
 		<>
 			{isGamePage || isRoundPage ? (
 				<Outlet />
-			) : (
+			) : roomExists ? (
 				<div className='flex justify-between h-screen flex-col p-5 '>
 					<ParticipantList participants={participants} />
 					{renderConditions()}
 					<ModalRefer
 						isModalRefer={isModalRefer}
-						roomCode={roomCode}
+						roomCode={id}
 						setIsModalRefer={setIsModalRefer}
 					/>
 				</div>
+			) : (
+				<div>Данной игры не существует</div>
 			)}
 		</>
 	)
@@ -92,29 +94,37 @@ const ParticipantList = ({ participants }) => {
 				<h1>Участники ({participants.length}) </h1>
 			</div>
 			<div className='px-8 mt-10 flex flex-col gap-5 max-h-60 '>
-				{participants.map((participant, index) => (
-					<div key={index} className='flex items-center'>
-						<Avatar
-							src={participant.avatar}
-							size={48}
-							alt={`Аватарка ${participant.name[0]}`}
-						/>
-						<span className='text-3xl ml-10'>{participant.name}</span>
-					</div>
-				))}
+				{participants &&
+					participants.map((participant, index) => (
+						<div key={index} className='flex items-center'>
+							<Avatar
+								src={participant.avatar}
+								size={48}
+								alt={`Аватарка ${participant.name}`}
+							/>
+							<span className='text-3xl ml-10'>{participant.name}</span>
+						</div>
+					))}
 			</div>
 		</div>
 	)
 }
 
-const SelectName = ({ participants, setParticipants, setUserName }) => {
+const SelectName = ({ setUserName, roomCode }) => {
 	const [inputValue, setInputValue] = useState('')
+	const [connectRoom, {}] = roomAPI.useConnectRoomMutation()
 	const handleSelectName = () => {
 		const player = {
 			name: inputValue,
 		}
+		console.log(roomCode)
 		setUserName(inputValue)
-		setParticipants([...participants, player])
+		const data = {
+			roomCode,
+			player,
+		}
+		connectRoom(data)
+		socket.emit('joinRoom', { roomCode, playerName: inputValue })
 	}
 
 	return (

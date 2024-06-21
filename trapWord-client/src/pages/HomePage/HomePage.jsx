@@ -1,11 +1,25 @@
 import { Button } from 'antd'
 import { useNavigate } from 'react-router-dom'
+import { roomAPI } from '../../entitys/Room/api/service.js'
 
 const HomePage = () => {
 	const navigate = useNavigate()
+	const [createRoom, {}] = roomAPI.useCreateRoomMutation()
 
-	const onCreateRoomClick = () => {
-		navigate('/lobby/555666')
+	const onCreateRoomClick = async () => {
+		try {
+			const response = await createRoom()
+			if (response.error) {
+				// Обработка ошибки, если она есть
+				console.error('Ошибка при создании комнаты:', data.roomCode.error)
+			} else {
+				// Переходим на страницу лобби с roomCode, если все в порядке
+				const { roomCode } = response.data
+				navigate(`/lobby/${roomCode}`)
+			}
+		} catch (error) {
+			console.error('Ошибка при создании комнаты:', error)
+		}
 	}
 
 	return (
