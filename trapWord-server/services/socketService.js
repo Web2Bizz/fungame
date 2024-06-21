@@ -7,7 +7,7 @@ const socketService = {
 		io = new Server(server, {
 			connectionStateRecovery: {},
 			cors: {
-				origin: '*'
+				origin: '*',
 			},
 		})
 		io.on('connection', socket => {
@@ -16,8 +16,8 @@ const socketService = {
 			socket.on('joinRoom', async ({ roomCode, playerName }) => {
 				try {
 					socket.join(roomCode)
-					await joinRoom(roomCode, playerName, socket.id)
 					io.to(roomCode).emit('playerJoined', { roomCode, playerName })
+					await joinRoom(roomCode, playerName, socket.id)
 				} catch (err) {
 					console.error(err.message)
 				}
@@ -29,7 +29,7 @@ const socketService = {
 			})
 		})
 
-		Object.freeze(io);
+		Object.freeze(io)
 	},
 	getIO: () => {
 		if (!io) {
