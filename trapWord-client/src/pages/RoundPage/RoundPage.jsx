@@ -82,7 +82,7 @@ const RoundPage = () => {
 	return (
 		<div style={{ height: 'calc(100vh - 80px)' }} className='flex flex-col'>
 			<GameHeader currentRound={1} />
-			<ProposeWord />
+			<ProposeWord word={'Голубь'} />
 
 			{/* <GuessPlacementTrap traps={traps} /> */}
 			<GuessTrapWord />

@@ -4,7 +4,7 @@ export const roomAPI = createApi({
 	tagTypes: ['Room'],
 	reducerPath: 'roomAPI',
 	baseQuery: fetchBaseQuery({
-		baseUrl: import.meta.env.VITE_API_URL + '/rooms',
+		baseUrl: import.meta.env.VITE_API_URL + '/api/rooms',
 		keepalive: false,
 	}),
 	endpoints: builder => ({
