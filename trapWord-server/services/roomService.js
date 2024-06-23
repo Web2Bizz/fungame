@@ -20,17 +20,21 @@ export function createRoom() {
 	})
 }
 
-export function joinRoom(roomCode, playerName, socketId) {
+export function joinRoom(roomCode, playerName) {
 	return new Promise((resolve, reject) => {
 		if (rooms[roomCode]) {
-			rooms[roomCode].players.push({ id: socketId, name: playerName })
+			let userId = Math.random().toString(16).slice(2)
+			rooms[roomCode].players.push({ id: userId, name: playerName })
 			console.log(`${playerName} присоединился к комнате ${roomCode}`)
 
 			// Отправляем событие клиентам в этой комнате
 			const io = socketService.getIO()
 			io.to(roomCode).emit('playerJoined', { roomCode, playerName })
 
-			resolve({ message: `${playerName} присоединился к комнате ${roomCode}` })
+			resolve({
+				message: `${playerName} присоединился к комнате ${roomCode}`,
+				player: { id: userId, name: playerName, roomCode: roomCode },
+			})
 		} else {
 			reject(new Error(`Комната с кодом ${roomCode} не найдена`))
 		}

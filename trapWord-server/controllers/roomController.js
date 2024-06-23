@@ -15,9 +15,9 @@ export async function createRoom(req, res, next) {
 }
 
 export async function joinRoom(req, res, next) {
-	const { roomCode, player } = req.body
+	const { roomCode, playerName } = req.body
 	try {
-		const result = await joinRoomService(roomCode, player.name)
+		const result = await joinRoomService(roomCode, playerName.name)
 		res.status(200).json(result)
 	} catch (error) {
 		next(error)

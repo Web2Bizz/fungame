@@ -2,14 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { Outlet, useLocation, useParams } from 'react-router-dom'
 import io from 'socket.io-client'
 import { roomAPI } from '../../entitys/Room/api/service'
+import SessionControl from '../../shared/lib/SessionControl'
 
 import {
+	AbsentPage,
 	InviteButton,
 	ModalRefer,
 	ParticipantList,
 	SelectName,
 	StartGameButton,
-	AbsentPage,
 } from '../../widgets'
 
 const socket = io(import.meta.env.VITE_API_URL)
@@ -29,6 +30,23 @@ const LobbyPage = () => {
 
 	const [userName, setUserName] = useState('')
 	const minPlayers = 4
+
+	useEffect(() => {
+		SessionControl.setStoreType('sessionstorage')
+		const playerName = SessionControl.get('playerName')
+		const roomCode = SessionControl.get('playerRoomCode')
+
+		if (roomCode !== id) {
+			SessionControl.remove('playerId')
+			SessionControl.remove('playerName')
+			SessionControl.remove('playerRoomCode')
+		}
+
+		//TODO: сделать отключение от комнат
+		if (playerName) {
+			setUserName(playerName)
+		}
+	}, [])
 
 	useEffect(() => {
 		if (existRoom) {

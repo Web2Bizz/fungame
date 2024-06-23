@@ -13,7 +13,7 @@ const HomePage = () => {
 		try {
 			const response = await createRoom()
 			if (response.error) {
-				console.error('Ошибка при создании комнаты:', data.roomCode.error)
+				console.error('Ошибка при создании комнаты:', response)
 			} else {
 				const { roomCode } = response.data
 				navigate(`/lobby/${roomCode}`)
@@ -40,4 +40,4 @@ const HomePage = () => {
 	)
 }
 
-export default HomePage;
+export default HomePage
